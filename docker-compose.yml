@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  queue:
+    image: schickling/beanstalkd
+    entrypoint: /usr/bin/beanstalkd
+    ports:
+      - 11300:11300
+    volumes:
+      - ./queuedata/binstalkd:/queuedata
+
+  producer:
+    build:
+      context: .
+    command: python producer.py beanstalkd --queue-host=queue --queue-port=11300
+    volumes:
+      - .:/app
+
+  consumer:
+    build:
+      context: .
+    command: python consumer.py beanstalkd --queue-host=queue --queue-port=11300
+    volumes:
+      - .:/app
