@@ -3,7 +3,7 @@ version: "3.7"
 services:
   queue:
     image: schickling/beanstalkd
-    entrypoint: /usr/bin/beanstalkd
+    entrypoint: /usr/bin/beanstalkd -b /queuedata
     ports:
       - 11300:11300
     volumes:
