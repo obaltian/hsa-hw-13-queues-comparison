@@ -1,10 +1,12 @@
 import argparse
 import logging
 
-import orjson
 import tqdm
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    level=logging.INFO,
+)
 logger = logging.getLogger(__name__)
 
 
@@ -31,10 +33,23 @@ def produce_to_beanstalkd(args: argparse.Namespace) -> None:
 
     client = pystalk.BeanstalkClient(args.queue_host, args.queue_port)
     logger.info("inititalized client")
-    message = orjson.dumps({"foo": "bar"})
 
-    for _ in tqdm.tqdm(tqdm.trange(args.message_count)):
-        client.put_job(message)
+    for i in tqdm.tqdm(tqdm.trange(args.message_count)):
+        client.put_job(str(i))
+    logger.info(f"produced {args.message_count} messages, terminating")
+
+
+def produce_to_redis(args: argparse.Namespace) -> None:
+    import redis
+    import rq
+
+    from consumer import consumer_handler
+
+    queue = rq.Queue(connection=redis.Redis(args.queue_host, args.queue_port))
+    logger.info("inititalized client")
+
+    for i in tqdm.tqdm(tqdm.trange(args.message_count)):
+        queue.enqueue(consumer_handler, i)
     logger.info(f"produced {args.message_count} messages, terminating")
 
 

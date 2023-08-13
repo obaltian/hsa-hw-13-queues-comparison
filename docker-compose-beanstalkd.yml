@@ -7,18 +7,22 @@ services:
     ports:
       - 11300:11300
     volumes:
-      - ./queuedata/binstalkd:/queuedata
+      - ./queuedata/beanstalkd:/queuedata
 
   producer:
+    depends_on:
+      - queue
     build:
       context: .
-    command: python producer.py beanstalkd --queue-host=queue --queue-port=11300
+    command: python producer.py beanstalkd --queue-host=queue --queue-port=11300 -n=1000
     volumes:
       - .:/app
 
   consumer:
+    depends_on:
+      - queue
     build:
       context: .
-    command: python consumer.py beanstalkd --queue-host=queue --queue-port=11300
+    command: python consumer.py beanstalkd --queue-host=queue --queue-port=11300 -n=1000
     volumes:
       - .:/app
